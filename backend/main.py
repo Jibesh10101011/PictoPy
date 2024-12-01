@@ -2,11 +2,14 @@
 This module contains the main FastAPI application.
 """
 
+import sys
+import signal
 from time import sleep
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-
+from hypercorn.asyncio import serve 
+from hypercorn.config import Config
 from app.database.faces import cleanup_face_embeddings, create_faces_table
 from app.database.images import create_image_id_mapping_table, create_images_table
 from app.database.albums import create_albums_table
@@ -47,3 +50,16 @@ app.include_router(test_router, prefix="/test", tags=["Test"])
 app.include_router(images_router, prefix="/images", tags=["Images"])
 app.include_router(albums_router, prefix="/albums", tags=["Albums"])
 app.include_router(tagging_router, prefix="/tag", tags=["Tagging"])
+
+def handle_signal(signal,frame) : 
+    print("Exiting...")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT,handle_signal)
+config = Config()
+config.bind = ["0.0.0.0:8000"]
+
+
+if __name__ == "__main__" : 
+    import asyncio
+    asyncio.run(serve(app,config))

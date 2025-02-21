@@ -5,6 +5,7 @@ This module contains the main FastAPI application.
 from uvicorn import Config, Server
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 from app.database.faces import cleanup_face_embeddings, create_faces_table
 from app.database.images import create_image_id_mapping_table, create_images_table
@@ -17,6 +18,8 @@ from app.routes.albums import router as albums_router
 from app.routes.facetagging import router as tagging_router
 import multiprocessing
 from app.custom_logging import CustomizeLogger
+
+
 
 
 @asynccontextmanager
@@ -36,6 +39,31 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+app = FastAPI()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    error_messages = []
+    
+    for error in errors:
+        field = ".".join(error["loc"])  # Gets the field name
+        msg = error["msg"]  # Extracts the error message
+        error_messages.append(f"{field}: {msg}")
+
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "success": False,
+            "message": "Invalid request payload",
+            "errors": error_messages
+        },
+    )
 
 # Add CORS middleware
 app.add_middleware(

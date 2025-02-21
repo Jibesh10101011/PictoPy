@@ -1,7 +1,9 @@
 from pydantic import BaseModel,Field, field_validator
-from typing import Optional
+from typing import Optional,List
 from pydantic_core.core_schema import ValidationInfo
 
+
+# Request Handler
 
 class AlbumCreate(BaseModel) :
     name : str
@@ -20,6 +22,14 @@ class AlbumDeleteRequest(BaseModel) :
     name : str
 
 
+class AddMultipleImagesRequest(BaseModel) :
+    album_name: str
+    paths: List[str]
+
+
+
+
+# Response Handler
 
 class AlbumCreateResponse(BaseModel) :
     success : bool
@@ -36,4 +46,12 @@ class ErrorResponse(BaseModel) :
     success: bool = False
     message: str
     error: str
+
+
+class AddMultipleImagesResponse(BaseModel) : 
+    success: bool
+    message: str
+    data: Optional[dict] = None
+
+
 

@@ -16,11 +16,21 @@ class AlbumCreate(BaseModel) :
         return value
 
 
-class AlbumResponse(BaseModel) :
+class AlbumDeleteRequest(BaseModel) : 
+    name : str
+
+
+
+class AlbumCreateResponse(BaseModel) :
     success : bool
     message : str
     data : dict 
 
+
+class AlbumDeleteResponse(BaseModel):
+    success: bool
+    message: str
+    data: str | None = None  # Data can be None if an error occurs
 
 class ErrorResponse(BaseModel) :
     success: bool = False

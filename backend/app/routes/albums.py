@@ -13,14 +13,14 @@ from app.database.albums import (
 from app.utils.APIError import APIError
 from app.utils.wrappers import exception_handler_wrapper
 from app.config.settings import IMAGES_PATH
-from app.schemas.album import AlbumCreate,AlbumResponse,ErrorResponse
+from app.schemas.album import AlbumCreate,AlbumCreateResponse,ErrorResponse,AlbumDeleteResponse,AlbumDeleteRequest
 from pydantic import ValidationError
 
 
 router = APIRouter()
 
 
-@router.post("/create-album",response_model=AlbumResponse,responses={400: {"model": ErrorResponse}})
+@router.post("/create-album",response_model=AlbumCreateResponse,responses={400: {"model": ErrorResponse}})
 @exception_handler_wrapper
 def create_new_album(payload:AlbumCreate):
     try:
@@ -28,7 +28,7 @@ def create_new_album(payload:AlbumCreate):
         create_album(payload.name, payload.description, payload.is_hidden, payload.password)
 
         # Success Response
-        return AlbumResponse(
+        return AlbumCreateResponse(
             success=True,
             message=f"Album '{payload.name}' created successfully",
             data={
@@ -53,33 +53,28 @@ def create_new_album(payload:AlbumCreate):
         )
 
 
-@router.delete("/delete-album")
+@router.delete("/delete-album",response_model=AlbumDeleteResponse)
 @exception_handler_wrapper
-def delete_existing_album(payload: dict):
-    if "name" not in payload:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={
-                "status_code": status.HTTP_400_BAD_REQUEST,
-                "content": {
-                    "success": False,
-                    "error": "Missing 'name' in payload",
-                    "message": "Album name is required",
-                },
-            },
-        )
-
-    album_name = payload["name"]
+def delete_existing_album(payload: AlbumDeleteRequest):
+    
+    album_name = payload.name 
     delete_album(album_name)
+    try :
+        return AlbumDeleteResponse(
+            success=True,
+            message=f"Album '{album_name}' deleted successfully",
+            data=album_name
+        )
+    except Exception as e:
 
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "data": album_name,
-            "message": f"Album '{album_name}' deleted successfully",
-            "success": True,
-        },
-    )
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=AlbumDeleteResponse(
+                success=False,
+                message="Failed to delete album",
+                data=None
+            ).dict()
+        )
 
 
 @router.post("/add-multiple-to-album")

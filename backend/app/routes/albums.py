@@ -109,6 +109,7 @@ def add_multiple_images_to_album(payload: AddMultipleImagesRequest):
     )
 
 
+
 @router.delete("/remove-from-album")
 @exception_handler_wrapper
 def remove_image_from_album(payload: dict):

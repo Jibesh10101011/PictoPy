@@ -54,4 +54,13 @@ class AddMultipleImagesResponse(BaseModel) :
     data: Optional[dict] = None
 
 
+class ViewAlbumRequest(BaseModel) : 
+    album_name: str = Field(..., description="Name of the album to view")
+    password: Optional[str] = Field(None, description="Password for hidden albums")
 
+
+
+class ViewAlbumResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[dict] = None

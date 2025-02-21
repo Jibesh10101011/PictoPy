@@ -65,6 +65,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
